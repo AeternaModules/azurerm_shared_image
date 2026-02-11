@@ -53,7 +53,7 @@ EOT
     min_recommended_memory_in_gb        = optional(number)
     max_recommended_vcpu_count          = optional(number)
     max_recommended_memory_in_gb        = optional(number)
-    hyper_v_generation                  = optional(string, "V1")
+    hyper_v_generation                  = optional(string) # Default: "V1"
     end_of_life_date                    = optional(string)
     eula                                = optional(string)
     trusted_launch_enabled              = optional(bool)
@@ -62,7 +62,7 @@ EOT
     description                         = optional(string)
     confidential_vm_supported           = optional(bool)
     confidential_vm_enabled             = optional(bool)
-    architecture                        = optional(string, "x64")
+    architecture                        = optional(string) # Default: "x64"
     accelerated_network_support_enabled = optional(bool)
     hibernation_enabled                 = optional(bool)
     trusted_launch_supported            = optional(bool)
