@@ -1,3 +1,7 @@
+output "shared_images_id" {
+  description = "Map of id values across all shared_images, keyed the same as var.shared_images"
+  value       = { for k, v in azurerm_shared_image.shared_images : k => v.id }
+}
 output "shared_images_accelerated_network_support_enabled" {
   description = "Map of accelerated_network_support_enabled values across all shared_images, keyed the same as var.shared_images"
   value       = { for k, v in azurerm_shared_image.shared_images : k => v.accelerated_network_support_enabled }
