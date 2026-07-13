@@ -53,7 +53,7 @@ EOT
     min_recommended_memory_in_gb        = optional(number)
     max_recommended_vcpu_count          = optional(number)
     max_recommended_memory_in_gb        = optional(number)
-    hyper_v_generation                  = optional(string) # Default: "V1"
+    hyper_v_generation                  = optional(string)
     end_of_life_date                    = optional(string)
     eula                                = optional(string)
     trusted_launch_enabled              = optional(bool)
@@ -62,7 +62,7 @@ EOT
     description                         = optional(string)
     confidential_vm_supported           = optional(bool)
     confidential_vm_enabled             = optional(bool)
-    architecture                        = optional(string) # Default: "x64"
+    architecture                        = optional(string)
     accelerated_network_support_enabled = optional(bool)
     hibernation_enabled                 = optional(bool)
     trusted_launch_supported            = optional(bool)
@@ -77,62 +77,6 @@ EOT
       publisher = optional(string)
     }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.shared_images : (
-        v.purchase_plan == null || (length(v.purchase_plan.name) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.shared_images : (
-        v.purchase_plan == null || (v.purchase_plan.publisher == null || (length(v.purchase_plan.publisher) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.shared_images : (
-        v.purchase_plan == null || (v.purchase_plan.product == null || (length(v.purchase_plan.product) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.shared_images : (
-        v.max_recommended_vcpu_count == null || (v.max_recommended_vcpu_count >= 1 && v.max_recommended_vcpu_count <= 80)
-      )
-    ])
-    error_message = "must be between 1 and 80"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.shared_images : (
-        v.min_recommended_vcpu_count == null || (v.min_recommended_vcpu_count >= 1 && v.min_recommended_vcpu_count <= 80)
-      )
-    ])
-    error_message = "must be between 1 and 80"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.shared_images : (
-        v.max_recommended_memory_in_gb == null || (v.max_recommended_memory_in_gb >= 1 && v.max_recommended_memory_in_gb <= 640)
-      )
-    ])
-    error_message = "must be between 1 and 640"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.shared_images : (
-        v.min_recommended_memory_in_gb == null || (v.min_recommended_memory_in_gb >= 1 && v.min_recommended_memory_in_gb <= 640)
-      )
-    ])
-    error_message = "must be between 1 and 640"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_shared_image's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -195,6 +139,27 @@ EOT
   #   source:    [from validate.SharedImageIdentifierAttribute: must not end with "."]
   # path: identifier.sku
   #   source:    [from validate.SharedImageIdentifierAttribute] !regexp.MustCompile(`^[A-Za-z0-9._-]+$`).MatchString(value)
+  # path: purchase_plan.name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: purchase_plan.publisher
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: purchase_plan.product
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: max_recommended_vcpu_count
+  #   condition: value >= 1 && value <= 80
+  #   message:   must be between 1 and 80
+  # path: min_recommended_vcpu_count
+  #   condition: value >= 1 && value <= 80
+  #   message:   must be between 1 and 80
+  # path: max_recommended_memory_in_gb
+  #   condition: value >= 1 && value <= 640
+  #   message:   must be between 1 and 640
+  # path: min_recommended_memory_in_gb
+  #   condition: value >= 1 && value <= 640
+  #   message:   must be between 1 and 640
   # path: tags
   #   condition: length(value) <= 50
   #   message:   [from tags.Validate: invalid when len(value) > 50]
