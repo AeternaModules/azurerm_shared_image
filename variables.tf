@@ -77,102 +77,94 @@ EOT
       publisher = optional(string)
     }))
   }))
-  # --- Unconfirmed validation candidates, derived from azurerm_shared_image's provider source ---
-  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
-  # or a path that crosses a list-typed block (needs its own for_each wrapping).
-  # Review, translate into a real validation{} block above, and delete once confirmed.
-  # path: name
-  #   source:    [from validate.SharedImageName] !regexp.MustCompile(`^[A-Za-z0-9._-]+$`).MatchString(value)
-  # path: name
-  #   source:    [from validate.SharedImageName] length > 80
-  # path: gallery_name
-  #   source:    [from validate.SharedImageGalleryName] !r.MatchString(value)
-  # path: gallery_name
-  #   source:    [from validate.SharedImageGalleryName] length > 80
-  # path: location
-  #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
-  # path: resource_group_name
-  #   condition: length(value) <= 90
-  #   message:   [from resourcegroups.ValidateName: invalid when len(value) > 90]
-  #   source:    [from resourcegroups.ValidateName: invalid when len(value) > 90]
-  # path: resource_group_name
-  #   condition: !endswith(value, ".")
-  #   message:   [from resourcegroups.ValidateName: must not end with "."]
-  #   source:    [from resourcegroups.ValidateName: must not end with "."]
-  # path: resource_group_name
-  #   condition: length(value) != 0
-  #   message:   [from resourcegroups.ValidateName: invalid when len(value) == 0]
-  #   source:    [from resourcegroups.ValidateName: invalid when len(value) == 0]
-  # path: resource_group_name
-  #   source:    [from resourcegroups.ValidateName] !matched
-  # path: architecture
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: os_type
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: disk_types_not_allowed[*]
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: end_of_life_date
-  #   source:    validation.IsRFC3339Time(...) - no translation rule yet, add one
-  # path: hyper_v_generation
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: identifier.publisher
-  #   source:    [from validate.SharedImageIdentifierAttribute] length > maxLength
-  # path: identifier.publisher
-  #   condition: !endswith(value, ".")
-  #   message:   [from validate.SharedImageIdentifierAttribute: must not end with "."]
-  #   source:    [from validate.SharedImageIdentifierAttribute: must not end with "."]
-  # path: identifier.publisher
-  #   source:    [from validate.SharedImageIdentifierAttribute] !regexp.MustCompile(`^[A-Za-z0-9._-]+$`).MatchString(value)
-  # path: identifier.offer
-  #   source:    [from validate.SharedImageIdentifierAttribute] length > maxLength
-  # path: identifier.offer
-  #   condition: !endswith(value, ".")
-  #   message:   [from validate.SharedImageIdentifierAttribute: must not end with "."]
-  #   source:    [from validate.SharedImageIdentifierAttribute: must not end with "."]
-  # path: identifier.offer
-  #   source:    [from validate.SharedImageIdentifierAttribute] !regexp.MustCompile(`^[A-Za-z0-9._-]+$`).MatchString(value)
-  # path: identifier.sku
-  #   source:    [from validate.SharedImageIdentifierAttribute] length > maxLength
-  # path: identifier.sku
-  #   condition: !endswith(value, ".")
-  #   message:   [from validate.SharedImageIdentifierAttribute: must not end with "."]
-  #   source:    [from validate.SharedImageIdentifierAttribute: must not end with "."]
-  # path: identifier.sku
-  #   source:    [from validate.SharedImageIdentifierAttribute] !regexp.MustCompile(`^[A-Za-z0-9._-]+$`).MatchString(value)
-  # path: purchase_plan.name
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: purchase_plan.publisher
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: purchase_plan.product
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: max_recommended_vcpu_count
-  #   condition: value >= 1 && value <= 80
-  #   message:   must be between 1 and 80
-  # path: min_recommended_vcpu_count
-  #   condition: value >= 1 && value <= 80
-  #   message:   must be between 1 and 80
-  # path: max_recommended_memory_in_gb
-  #   condition: value >= 1 && value <= 640
-  #   message:   must be between 1 and 640
-  # path: min_recommended_memory_in_gb
-  #   condition: value >= 1 && value <= 640
-  #   message:   must be between 1 and 640
-  # path: tags
-  #   condition: length(value) <= 50
-  #   message:   [from tags.Validate: invalid when len(value) > 50]
-  #   source:    [from tags.Validate: invalid when len(value) > 50]
-  # path: tags
-  #   condition: length(value) <= 512
-  #   message:   [from tags.Validate: invalid when len(value) > 512]
-  #   source:    [from tags.Validate: invalid when len(value) > 512]
-  # path: tags
-  #   source:    [from tags.Validate] err != nil
-  # path: tags
-  #   condition: length(value) <= 256
-  #   message:   [from tags.Validate: invalid when len(value) > 256]
-  #   source:    [from tags.Validate: invalid when len(value) > 256]
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        length(v.resource_group_name) <= 90
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: invalid when len(value) > 90]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        !endswith(v.resource_group_name, ".")
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: must not end with \".\"]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        length(v.resource_group_name) != 0
+      )
+    ])
+    error_message = "[from resourcegroups.ValidateName: invalid when len(value) == 0]"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.purchase_plan == null || (length(v.purchase_plan.name) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.purchase_plan == null || (v.purchase_plan.publisher == null || (length(v.purchase_plan.publisher) > 0))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.purchase_plan == null || (v.purchase_plan.product == null || (length(v.purchase_plan.product) > 0))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.max_recommended_vcpu_count == null || (v.max_recommended_vcpu_count >= 1 && v.max_recommended_vcpu_count <= 80)
+      )
+    ])
+    error_message = "must be between 1 and 80"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.min_recommended_vcpu_count == null || (v.min_recommended_vcpu_count >= 1 && v.min_recommended_vcpu_count <= 80)
+      )
+    ])
+    error_message = "must be between 1 and 80"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.max_recommended_memory_in_gb == null || (v.max_recommended_memory_in_gb >= 1 && v.max_recommended_memory_in_gb <= 640)
+      )
+    ])
+    error_message = "must be between 1 and 640"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.min_recommended_memory_in_gb == null || (v.min_recommended_memory_in_gb >= 1 && v.min_recommended_memory_in_gb <= 640)
+      )
+    ])
+    error_message = "must be between 1 and 640"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.shared_images : (
+        v.tags == null || (length(v.tags) <= 50)
+      )
+    ])
+    error_message = "[from tags.Validate: invalid when len(value) > 50]"
+  }
+  # Note: 23 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
