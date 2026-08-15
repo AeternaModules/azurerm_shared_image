@@ -52,7 +52,7 @@ output "shared_images_hyper_v_generation" {
 }
 output "shared_images_identifier" {
   description = "Map of identifier values across all shared_images, keyed the same as var.shared_images"
-  value       = { for k, v in azurerm_shared_image.shared_images : k => v.identifier if v.identifier != null && length(v.identifier) > 0 }
+  value       = { for k, v in azurerm_shared_image.shared_images : k => one(v.identifier) if v.identifier != null && length(v.identifier) > 0 }
 }
 output "shared_images_location" {
   description = "Map of location values across all shared_images, keyed the same as var.shared_images"
@@ -88,7 +88,7 @@ output "shared_images_privacy_statement_uri" {
 }
 output "shared_images_purchase_plan" {
   description = "Map of purchase_plan values across all shared_images, keyed the same as var.shared_images"
-  value       = { for k, v in azurerm_shared_image.shared_images : k => v.purchase_plan if v.purchase_plan != null && length(v.purchase_plan) > 0 }
+  value       = { for k, v in azurerm_shared_image.shared_images : k => one(v.purchase_plan) if v.purchase_plan != null && length(v.purchase_plan) > 0 }
 }
 output "shared_images_release_note_uri" {
   description = "Map of release_note_uri values across all shared_images, keyed the same as var.shared_images"
